@@ -1,5 +1,6 @@
 name: Daily DecoTV Scraper
 on:
+  workflow_dispatch:   # ← 新增這一行
   schedule:
     - cron: '0 18 * * *'  # UTC 18:00 = 台灣隔天 02:00
 jobs:
