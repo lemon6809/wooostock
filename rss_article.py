@@ -175,13 +175,12 @@ def process_rss(feed_url: str):
 
 # ---------- CLI scraper ----------
 if __name__ == '__main__':
-    from scrape import process_rss as rss_cli, RSS_URL as CLI_RSS_URL
-    summary, _ = rss_cli(CLI_RSS_URL)
+    summary, _ = process_rss(RSS_URL)
     print(summary)  # 用於 GitHub Actions
 
 # ---------- Flask Routes ----------
 @app.route('/', methods=['GET'])
- def root():
+def root():
     url = request.args.get('url')
     if url:
         seen = load_posted()
