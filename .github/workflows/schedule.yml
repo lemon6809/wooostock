@@ -13,6 +13,7 @@ jobs:
           python-version: '3.13'
       - run: pip install --no-cache-dir -r requirements.txt
       - run: python rss_article.py
+      - run: python scrape.py
         env:
           API_URL: ${{ secrets.API_URL }}
           API_KEY: ${{ secrets.API_KEY }}
