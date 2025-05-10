@@ -1,8 +1,8 @@
 name: Daily DecoTV Scraper
 on:
-  workflow_dispatch:
+  workflow_dispatch: {}
   schedule:
-    - cron: '0 18 * * *'
+    - cron: '0 18 * * *'  # UTC 18:00 = 台灣 02:00
 
 jobs:
   scrape:
@@ -11,7 +11,7 @@ jobs:
       - name: Checkout repo (with write permissions)
         uses: actions/checkout@v3
         with:
-          persist-credentials: true   # 允許後續 push
+          persist-credentials: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -26,8 +26,8 @@ jobs:
         env:
           API_URL: ${{ secrets.API_URL }}
           API_KEY: ${{ secrets.API_KEY }}
-          RSS_URL: 'https://decotv.com.tw/feed/'
-          POSTED_FILE: './posted.txt'
+          RSS_URL: ${{ secrets.RSS_URL }}
+          POSTED_FILE: ${{ secrets.POSTED_FILE }}
 
       - name: Commit updated posted.txt
         uses: stefanzweifel/git-auto-commit-action@v4
