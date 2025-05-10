@@ -18,10 +18,16 @@ from flask import Flask, request, jsonify
 load_dotenv()
 
 # ---------- Configuration ----------
-API_URL     = os.getenv('API_URL', 'https://beta-backend.wooostock.com/api/public/external/article/set')
-API_KEY     = os.getenv('API_KEY', '')
-RSS_URL     = os.getenv('RSS_URL', 'https://decotv.com.tw/feed/')
-POSTED_PATH = Path(os.getenv('POSTED_FILE', './posted.txt'))
+API_URL     = os.getenv('API_URL')
+API_KEY     = os.getenv('API_KEY')
+RSS_URL     = os.getenv('RSS_URL')
+POSTED_FILE = os.getenv('POSTED_FILE')
+
+# Validate required environment variables
+if not API_URL or not API_KEY or not RSS_URL or not POSTED_FILE:
+    raise RuntimeError("Missing one of required env vars: API_URL, API_KEY, RSS_URL, POSTED_FILE")
+
+POSTED_PATH = Path(POSTED_FILE)
 FMT         = '%Y-%m-%d %H:%M:%S'
 UA          = {'User-Agent': 'Mozilla/5.0 DecoTV-RSS/1.1'}
 
@@ -107,8 +113,7 @@ def push_article(url: str, seen: set[str]) -> str | None:
 
     segs, first_img = [], ''
     for p in root.xpath('.//p'):
-        # skip pure image paragraphs if wrapped in <a>
-        if len(p) == 1 and p[0].tag == 'a' and len(p[0]) > 0 and p[0][0].tag == 'img':
+        if len(p) == 1 and p[0].tag == 'a' and len(p[0]) and p[0][0].tag == 'img':
             continue
         phs = []
         for i, img in enumerate(p.xpath('.//img')):
@@ -139,9 +144,7 @@ def push_article(url: str, seen: set[str]) -> str | None:
         'description': '',
         'content': body,
         'keywords': keywords,
-        'type': '2',
-        'ac_type': '5',
-        'created_time': created
+        'type': '2', 'ac_type': '5', 'created_time': created
     }
 
     rsp = requests.post(API_URL, data=payload, files=files)
@@ -170,9 +173,15 @@ def process_rss(feed_url: str):
             results['failed'].append({'url': entry.link, 'error': str(e)})
     return results, 200
 
+# ---------- CLI scraper ----------
+if __name__ == '__main__':
+    from scrape import process_rss as rss_cli, RSS_URL as CLI_RSS_URL
+    summary, _ = rss_cli(CLI_RSS_URL)
+    print(summary)  # 用於 GitHub Actions
+
 # ---------- Flask Routes ----------
 @app.route('/', methods=['GET'])
-def root():
+ def root():
     url = request.args.get('url')
     if url:
         seen = load_posted()
@@ -182,5 +191,5 @@ def root():
     return jsonify({'summary': data}), code
 
 # ---------- Entry Point ----------
-if __name__ == '__main__':
+if __name__ == 'app':
     app.run(host='0.0.0.0', port=int(os.getenv('PORT', 8080)))
