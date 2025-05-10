@@ -33,7 +33,7 @@ jobs:
           RSS_URL: ${{ secrets.RSS_URL }}
           POSTED_FILE: ${{ secrets.POSTED_FILE }}
 
-            - name: Commit updated posted.txt
+      - name: Commit updated posted.txt
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_user_name: 'github-actions'
