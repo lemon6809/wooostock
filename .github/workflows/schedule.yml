@@ -1,20 +1,38 @@
 name: Daily DecoTV Scraper
 on:
-  workflow_dispatch:   # ← 新增這一行
+  workflow_dispatch:
   schedule:
-    - cron: '0 18 * * *'  # UTC 18:00 = 台灣隔天 02:00
+    - cron: '0 18 * * *'
+
 jobs:
   scrape:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v5
+      - name: Checkout repo (with write permissions)
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: true   # 允許後續 push
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - run: pip install --no-cache-dir -r requirements.txt
-      - run: python scrape.py
+
+      - name: Install dependencies
+        run: pip install --no-cache-dir -r requirements.txt
+
+      - name: Run scraper
+        run: python scrape.py
         env:
           API_URL: ${{ secrets.API_URL }}
           API_KEY: ${{ secrets.API_KEY }}
           RSS_URL: 'https://decotv.com.tw/feed/'
           POSTED_FILE: './posted.txt'
+
+      - name: Commit updated posted.txt
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_user_name: 'github-actions'
+          commit_user_email: 'actions@github.com'
+          commit_message: 'chore: update posted.txt'
+          file_pattern: 'posted.txt'
