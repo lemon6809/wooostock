@@ -1,4 +1,8 @@
 name: Daily DecoTV Scraper
+
+permissions:
+  contents: write
+
 on:
   workflow_dispatch: {}
   schedule:
@@ -29,10 +33,11 @@ jobs:
           RSS_URL: ${{ secrets.RSS_URL }}
           POSTED_FILE: ${{ secrets.POSTED_FILE }}
 
-      - name: Commit updated posted.txt
+            - name: Commit updated posted.txt
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_user_name: 'github-actions'
           commit_user_email: 'actions@github.com'
           commit_message: 'chore: update posted.txt'
-          commit_all: true
+          file_pattern: 'posted.txt'
+          skip_dirty_check: true
